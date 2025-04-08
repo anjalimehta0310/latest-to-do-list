@@ -99,12 +99,12 @@
         #newTaskWrapper {
             max-height: 350px;
             overflow-y: auto;
-            scrollbar-width: none; /* Firefox */
-            -ms-overflow-style: none; /* Internet Explorer 10+ */
+            scrollbar-width: none;
+            -ms-overflow-style: none;
         }
 
         #newTaskWrapper::-webkit-scrollbar {
-            display: none; /* Chrome, Safari, Opera */
+            display: none;
         }
     </style>
 </head>
@@ -127,7 +127,6 @@
                     <button type="submit" class="btn btn-primary text-nowrap">Add Task</button>
                 </form>
 
-                <!-- Scrollable wrapper for new tasks -->
                 <div id="newTaskWrapper">
                     <ul class="list-unstyled" id="newTaskList">
                         @foreach($tasks as $task)
