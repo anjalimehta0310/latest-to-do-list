@@ -89,6 +89,23 @@
                 box-shadow: none;
             }
         }
+
+        .main-div {
+            width: 40%;
+            padding: 10px 20px;
+            margin-left: 20%;
+        }
+
+        #newTaskWrapper {
+            max-height: 350px;
+            overflow-y: auto;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* Internet Explorer 10+ */
+        }
+
+        #newTaskWrapper::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+        }
     </style>
 </head>
 <body>
@@ -101,31 +118,35 @@
             <button class="btn btn-outline-secondary" onclick="showAll()">Show All Tasks</button>
             <button class="btn btn-outline-danger" onclick="hideCompleted()">Hide All Tasks</button>
         </div>
+        <div class="main-div">
+            <div class="main-content">
+                <h2 class="mb-4 text-center">📝 To-Do List</h2>
 
-        <div class="main-content">
-            <h2 class="mb-4 text-center">📝 To-Do List</h2>
+                <form id="taskForm" class="mb-4 d-flex gap-2">
+                    <input type="text" id="task" class="form-control" placeholder="Enter a task">
+                    <button type="submit" class="btn btn-primary text-nowrap">Add Task</button>
+                </form>
 
-            <form id="taskForm" class="mb-4 d-flex gap-2">
-                <input type="text" id="task" class="form-control" placeholder="Enter a task">
-                <button type="submit" class="btn btn-primary text-nowrap">Add Task</button>
-            </form>
+                <!-- Scrollable wrapper for new tasks -->
+                <div id="newTaskWrapper">
+                    <ul class="list-unstyled" id="newTaskList">
+                        @foreach($tasks as $task)
+                        <li class="task-item {{ $task->is_completed ? 'completed' : '' }}" data-id="{{ $task->id }}">
+                            <div>
+                                <input type="checkbox" class="form-check-input me-2" onchange="toggleTask({{ $task->id }})" {{ $task->is_completed ? 'checked' : '' }}>
+                                <span>{{ $task->title }}</span>
+                            </div>
+                            <button class="btn btn-danger btn-sm" onclick="deleteTask({{ $task->id }})">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </li>
+                        @endforeach
+                    </ul>
+                </div>
 
-            <ul class="list-unstyled" id="newTaskList">
-                @foreach($tasks as $task)
-                <li class="task-item {{ $task->is_completed ? 'completed' : '' }}" data-id="{{ $task->id }}">
-                    <div>
-                        <input type="checkbox" class="form-check-input me-2" onchange="toggleTask({{ $task->id }})" {{ $task->is_completed ? 'checked' : '' }}>
-                        <span>{{ $task->title }}</span>
-                    </div>
-                    <button class="btn btn-danger btn-sm" onclick="deleteTask({{ $task->id }})">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                </li>
-                @endforeach
-            </ul>
-
-            <h4 id="allTasksHeading" class="mb-3" style="display: none;">📋 All Tasks</h4>
-            <ul class="list-unstyled" id="allTaskList" style="display: none;"></ul>
+                <h4 id="allTasksHeading" class="mb-3" style="display: none;">📋 All Tasks</h4>
+                <ul class="list-unstyled" id="allTaskList" style="display: none;"></ul>
+            </div>
         </div>
     </div>
 
@@ -151,25 +172,26 @@
                 data: { title: title },
                 success: function (task) {
                     const li = `
-                <li class="task-item" data-id="${task.id}">
-                    <div>
-                        <input type="checkbox" class="form-check-input me-2" onchange="toggleTask(${task.id})">
-                        <span>${task.title}</span>
-                    </div>
-                    <button class="btn btn-danger btn-sm" onclick="deleteTask(${task.id})">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                        </li>`;
-                        $('#newTaskList').prepend(li);
-                        $('#task').val('');
-                        $('#allTaskList').hide();
-                        $('#allTasksHeading').hide();
-                        $('#newTaskList').show();
-                    },
-                    error: function () {
-                        alert("Duplicate task.");
-                    }
-                });
+                        <li class="task-item" data-id="${task.id}">
+                            <div>
+                                <input type="checkbox" class="form-check-input me-2" onchange="toggleTask(${task.id})">
+                                <span>${task.title}</span>
+                            </div>
+                            <button class="btn btn-danger btn-sm" onclick="deleteTask(${task.id})">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </li>
+                    `;
+                    $('#newTaskList').prepend(li);
+                    $('#task').val('');
+                    $('#allTaskList').hide();
+                    $('#allTasksHeading').hide();
+                    $('#newTaskWrapper').show();
+                },
+                error: function () {
+                    alert("Duplicate task.");
+                }
+            });
         }
 
         function toggleTask(id) {
@@ -184,7 +206,6 @@
                 }
             });
         }
-
 
         function deleteTask(id) {
             if (!confirm("Are you sure to delete this task?")) return;
@@ -206,29 +227,30 @@
                 url: '/tasks/all',
                 type: 'GET',
                 success: function (tasks) {
-                    $('#newTaskList').hide();
+                    $('#newTaskWrapper').hide();
                     $('#allTaskList').empty().show();
                     $('#allTasksHeading').show();
 
                     tasks.forEach(task => {
                         const li = `
-                    <li class="task-item ${task.is_completed ? 'completed' : ''}" data-id="${task.id}">
-                        <div>
-                            <input type="checkbox" class="form-check-input me-2" onchange="toggleTask(${task.id})" ${task.is_completed ? 'checked' : ''}>
-                            <span>${task.title}</span>
-                        </div>
-                        <button class="btn btn-danger btn-sm" onclick="deleteTask(${task.id})">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                            </li>`;
-                            $('#allTaskList').append(li);
-                        });
+                            <li class="task-item ${task.is_completed ? 'completed' : ''}" data-id="${task.id}">
+                                <div>
+                                    <input type="checkbox" class="form-check-input me-2" onchange="toggleTask(${task.id})" ${task.is_completed ? 'checked' : ''}>
+                                    <span>${task.title}</span>
+                                </div>
+                                <button class="btn btn-danger btn-sm" onclick="deleteTask(${task.id})">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </li>
+                        `;
+                        $('#allTaskList').append(li);
+                    });
                 }
             });
         }
 
         function hideCompleted() {
-            $('#newTaskList').fadeOut();
+            $('#newTaskWrapper').fadeOut();
             $('#allTaskList').fadeOut();
             $('#allTasksHeading').fadeOut();
         }
